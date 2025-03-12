@@ -1,13 +1,4 @@
-// import express from "express";
-// import { getUserReadingList, removeBookFromReadingList } from "../controllers/userController.js";
-// import {protect} from "../middleware/authMiddleware.js"
 
-// const router = express.Router();
-
-// router.get("/:userId/reading-list", getUserReadingList);
-// router.delete("/:userId/reading-list/:bookId", protect, removeBookFromReadingList);
-
-// export default router;
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import { getUserReadingList,addBookToReadingList, removeBookFromReadingList } from "../controllers/userController.js";

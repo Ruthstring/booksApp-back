@@ -1,26 +1,4 @@
-// import User from "../models/user.js";
 
-// // Get user's reading list (Populating book details)
-// export const getUserReadingList = async (req, res) => {
-//   try {
-//     const { userId } = req.params;
-//     const user = await User.findById(userId).populate("readingList.bookId");
-//     res.json(user.readingList);
-//   } catch (error) {
-//     res.status(500).json({ error: "Failed to get reading list" });
-//   }
-// };
-
-// // Remove book from user's reading list
-// export const removeBookFromReadingList = async (req, res) => {
-//   try {
-//     const { userId, bookId } = req.params;
-//     await User.findByIdAndUpdate(userId, { $pull: { readingList: { bookId } } });
-//     res.json({ message: "Book removed from reading list" });
-//   } catch (error) {
-//     res.status(500).json({ error: "Failed to remove book" });
-//   }
-// };
 import User from "../models/user.js";
 import Book from "../models/book.js";
 
