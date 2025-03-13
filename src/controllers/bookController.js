@@ -66,3 +66,134 @@ export const addBookToReadingList = async (req, res) => {
   }
 };
 
+// export const getRandomBook = async (req, res) => {
+//   try {
+//     const count = await Book.countDocuments();
+//     const randomIndex = Math.floor(Math.random() * count);
+//     const randomBook = await Book.findOne().skip(randomIndex);
+
+//     if (!randomBook) {
+//       return res.status(404).json({ error: "No books found" });
+//     }
+//     console.log("📚 Book Data Sent:", randomBook); 
+
+//     res.json({
+//       title: randomBook.title,
+//       author: randomBook.author,
+//       cover: randomBook.coverImage || "https://via.placeholder.com/150",
+//     });
+//   } catch (error) {
+//     console.error("🚨 Error fetching book:", error);
+//     res.status(500).json({ error: "Failed to fetch book" });
+//   }
+// };
+
+
+// export const getRandomBook = async (req, res) => {
+//   try {
+//     const count = await Book.countDocuments();
+//     const randomIndex = Math.floor(Math.random() * count);
+//     const randomBook = await Book.findOne().skip(randomIndex);
+
+//     if (!randomBook) {
+//       return res.status(404).json({ error: "No books found" });
+//     }
+
+//     console.log("📚 Book Data Sent:", randomBook);
+
+//     res.json({
+//       title: randomBook.title,
+//       author: randomBook.author,
+//       cover: randomBook.coverImage && randomBook.coverImage.startsWith("http")
+//         ? randomBook.coverImage
+//         : "https://via.placeholder.com/150", // Use placeholder if cover is missing
+//     });
+//   } catch (error) {
+//     console.error("🚨 Error fetching book:", error);
+//     res.status(500).json({ error: "Failed to fetch book" });
+//   }
+// };
+
+
+
+
+// export const getRandomBook = async (req, res) => {
+//   try {
+//     const count = await Book.countDocuments();
+//     const randomIndex = Math.floor(Math.random() * count);
+//     const randomBook = await Book.findOne().skip(randomIndex);
+
+//     if (!randomBook) {
+//       return res.status(404).json({ error: "No books found" });
+//     }
+
+//     console.log("📚 Book Data Sent:", randomBook);
+
+//     // ✅ Filter out invalid cover images
+//     const isValidCover =
+//       randomBook.coverImage &&
+//       randomBook.coverImage.startsWith("http") &&
+//       !randomBook.coverImage.includes("example.com"); // Exclude fake covers
+
+//     const coverImage = isValidCover
+//       ? randomBook.coverImage
+//       : "https://books.google.com/googlebooks/images/no_cover_thumb.gif"; // Google Books placeholder
+
+//     res.json({
+//       title: randomBook.title,
+//       author: randomBook.author,
+//       cover: coverImage,
+//     });
+//   } catch (error) {
+//     console.error("🚨 Error fetching book:", error);
+//     res.status(500).json({ error: "Failed to fetch book" });
+//   }
+// };
+
+
+export const getRandomBook = async (req, res) => {
+  try {
+    const count = await Book.countDocuments();
+    if (count === 0) {
+      return res.status(404).json({ error: "No books available" });
+    }
+
+    const randomIndex = Math.floor(Math.random() * count);
+    const randomBook = await Book.findOne().skip(randomIndex);
+
+    if (!randomBook) {
+      return res.status(404).json({ error: "No books found" });
+    }
+
+    console.log("📚 Random Book Selected:", randomBook);
+
+    let coverImage = randomBook.coverImage;
+
+    // ✅ If the cover is missing or invalid, fetch from Google Books API
+    if (!coverImage || coverImage.includes("example.com")) {
+      console.log("🔍 Fetching book cover from Google Books API...");
+      const googleBooksResponse = await axios.get(
+        `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(randomBook.title)}&key=${process.env.GOOGLE_BOOKS_API_KEY}`
+      );
+
+      const googleBook = googleBooksResponse.data.items?.[0]?.volumeInfo;
+      if (googleBook?.imageLinks) {
+        coverImage =
+        
+          googleBook.imageLinks.medium ||
+          googleBook.imageLinks.large ||
+          googleBook.imageLinks.thumbnail ||
+          "https://books.google.com/googlebooks/images/no_cover_thumb.gif";
+      }
+    }
+
+    res.json({
+      title: randomBook.title,
+      author: randomBook.author,
+      cover: coverImage,
+    });
+  } catch (error) {
+    console.error("🚨 Error fetching book:", error);
+    res.status(500).json({ error: "Failed to fetch book" });
+  }
+};
