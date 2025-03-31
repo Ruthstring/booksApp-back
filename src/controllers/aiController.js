@@ -1,284 +1,144 @@
 
+import axios from "axios";
+import fs from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
 
-// import axios from "axios";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const fallbacksPath = path.join(__dirname, "../data/fallbacks.json");
 
+let fallbackCache = null;
 
+// Normalize for matching
+function normalize(str) {
+	return str.toLowerCase().trim();
+}
 
-// export const getAIRecommendations = async (req, res) => {
-//   try {
-//     const { genre, mood } = req.body;
+// Load fallback JSON (once)
+async function getFallbackRecommendation(genre, mood) {
+	if (!fallbackCache) {
+		const raw = await fs.readFile(fallbacksPath, "utf-8");
+		fallbackCache = JSON.parse(raw);
+	}
 
-//     if (!genre || !mood) {
-//       return res.status(400).json({ error: "Genre and mood are required!" });
-//     }
-
-//     console.log(`🔍 Generating book recommendation for: Genre = ${genre}, Mood = ${mood}`);
-
-//     // ✅ Choose a working model (FLAN-T5)
-//     const model = "google/flan-t5-large"; 
-
-//     const response = await axios.post(
-//       `https://api-inference.huggingface.co/models/${model}`,
-//       {
-//         inputs: `Suggest a book for someone who likes ${genre} and wants to feel ${mood}.`
-//       },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
-
-//     if (!response.data || !response.data.length) {
-//       throw new Error("Empty response from Hugging Face API.");
-//     }
-
-//     const recommendation = response.data[0]?.generated_text || "No recommendation found.";
-
-//     console.log("✅ AI Recommendation:", recommendation);
-//     res.json({ recommendation });
-
-//   } catch (error) {
-//     console.error("🚨 AI Recommendation Error:", error.response?.data || error.message);
-
-//     if (error.response?.status === 404) {
-//       res.status(500).json({ error: "Hugging Face model not found. Try a different one." });
-//     } else if (error.response?.status === 401) {
-//       res.status(500).json({ error: "Invalid Hugging Face API key." });
-//     } else {
-//       res.status(500).json({ error: "AI recommendation failed" });
-//     }
-//   }
-// };
-
-
-// import axios from "axios";
-
-// export const getAIRecommendations = async (req, res) => {
-//   try {
-//     const { genre, mood } = req.body;
-
-//     if (!genre || !mood) {
-//       return res.status(400).json({ error: "Genre and mood are required!" });
-//     }
-
-//     console.log(`🔍 Generating book recommendation for: Genre = ${genre}, Mood = ${mood}`);
-
-//     // ✅ Choose a working model (FLAN-T5)
-//     const model = "google/flan-t5-large"; 
-
-//     const response = await axios.post(
-//       `https://api-inference.huggingface.co/models/${model}`,
-//       {
-//         inputs: `Suggest a book for someone who likes ${genre} and wants to feel ${mood}. Provide the title, author, a brief description, and a popular book cover link if possible.`,
-//       },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
-
-//     if (!response.data || !response.data.length) {
-//       throw new Error("Empty response from Hugging Face API.");
-//     }
-
-//     const rawRecommendation = response.data[0]?.generated_text || "No recommendation found.";
-
-//     console.log("✅ Raw AI Recommendation:", rawRecommendation);
-
-//     // ✅ Simple Parsing (Assumes AI returns formatted response)
-//     const parsedRecommendation = parseAIResponse(rawRecommendation);
-
-//     console.log("📚 Parsed Recommendation:", parsedRecommendation);
-
-//     res.json(parsedRecommendation);
-
-//   } catch (error) {
-//     console.error("🚨 AI Recommendation Error:", error.response?.data || error.message);
-
-//     if (error.response?.status === 404) {
-//       res.status(500).json({ error: "Hugging Face model not found. Try a different one." });
-//     } else if (error.response?.status === 401) {
-//       res.status(500).json({ error: "Invalid Hugging Face API key." });
-//     } else {
-//       res.status(500).json({ error: "AI recommendation failed" });
-//     }
-//   }
-// };
-
-// // ✅ Helper function to format AI response
-// const parseAIResponse = (rawText) => {
-//   const titleMatch = rawText.match(/Title: (.+)/i);
-//   const authorMatch = rawText.match(/Author: (.+)/i);
-//   const descriptionMatch = rawText.match(/Description: (.+)/i);
-//   const coverMatch = rawText.match(/Cover: (https?:\/\/[^\s]+)/i); // Extracts URL
-
-//   return {
-//     title: titleMatch ? titleMatch[1] : "Unknown Title",
-//     author: authorMatch ? authorMatch[1] : "Unknown Author",
-//     description: descriptionMatch ? descriptionMatch[1] : "No description available.",
-//     cover: coverMatch ? coverMatch[1] : "https://books.google.com/googlebooks/images/no_cover_thumb.gif", // Default fallback image
-//   };
-// };
-
-
-// import axios from "axios";
-
-// // ✅ AI Book Recommendation Controller
-// export const getAIRecommendations = async (req, res) => {
-//   try {
-//     const { genre, mood } = req.body;
-
-//     if (!genre || !mood) {
-//       return res.status(400).json({ error: "Genre and mood are required!" });
-//     }
-
-//     console.log(`🔍 Generating book recommendation for: Genre = ${genre}, Mood = ${mood}`);
-
-//     // ✅ AI Model (FLAN-T5 for text generation)
-//     const model = "google/flan-t5-large";
-
-//     const aiResponse = await axios.post(
-//       `https://api-inference.huggingface.co/models/${model}`,
-//       {
-//         inputs: `Suggest a book for someone who likes ${genre} and wants to feel ${mood}.`,
-//       },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
-
-//     if (!aiResponse.data || !aiResponse.data.length) {
-//       throw new Error("Empty response from Hugging Face API.");
-//     }
-
-//     const recommendedTitle = aiResponse.data[0]?.generated_text || "No recommendation found.";
-
-//     console.log("✅ AI Recommended Title:", recommendedTitle);
-
-//     // ✅ Fetch book details from Google Books API
-//     const googleResponse = await axios.get(
-//       `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(recommendedTitle)}&key=${process.env.GOOGLE_BOOKS_API_KEY}`
-//     );
-
-//     if (!googleResponse.data.items || googleResponse.data.items.length === 0) {
-//       return res.status(404).json({ error: "No book found for the recommendation." });
-//     }
-
-//     const bookData = googleResponse.data.items[0].volumeInfo;
-//     const bookDetails = {
-//       title: bookData.title || recommendedTitle,
-//       author: bookData.authors ? bookData.authors.join(", ") : "Unknown",
-//       cover: bookData.imageLinks?.medium || bookData.imageLinks?.thumbnail || "https://books.google.com/googlebooks/images/no_cover_thumb.gif",
-//       description: bookData.description || "No description available.",
-//     };
-
-//     console.log("📚 Final Book Recommendation:", bookDetails);
-//     res.json(bookDetails);
-
-//   } catch (error) {
-//     console.error("🚨 AI Recommendation Error:", error.response?.data || error.message);
-
-//     if (error.response?.status === 404) {
-//       res.status(500).json({ error: "Hugging Face model or Google Books data not found." });
-//     } else if (error.response?.status === 401) {
-//       res.status(500).json({ error: "Invalid API key." });
-//     } else {
-//       res.status(500).json({ error: "AI recommendation failed." });
-//     }
-//   }
-// };
-
-
-import axios from 'axios';
+	return fallbackCache.find(
+		(entry) =>
+			normalize(entry.genre) === normalize(genre) &&
+			normalize(entry.mood) === normalize(mood)
+	);
+}
 
 export const getAIRecommendations = async (req, res) => {
-  try {
-    const { genre, mood } = req.body;
+	try {
+		const { genre, mood } = req.body;
+		if (!genre || !mood)
+			return res.status(400).json({ error: "Genre and mood are required!" });
 
-    if (!genre || !mood) {
-      return res.status(400).json({ error: 'Genre and mood are required!' });
-    }
+		console.log(`🔍 Generating book recommendation for: Genre = ${genre}, Mood = ${mood}`);
 
-    console.log(`🔍 Generating book recommendation for: Genre = ${genre}, Mood = ${mood}`);
+		const model = "gpt2";
 
-    // GPT-2 Model Endpoint
-    const model = 'gpt2';
+		const aiResponse = await axios.post(
+			`https://api-inference.huggingface.co/models/${model}?wait_for_model=true`,
+			{
+				inputs: `Suggest a book for someone who likes ${genre} and feels ${mood}.`,
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+					"Content-Type": "application/json",
+				},
+				timeout: 30000,
+			}
+		);
 
-    // Hugging Face Inference API URL
-    const apiUrl = `https://api-inference.huggingface.co/models/${model}`;
+		const generatedText = aiResponse.data[0]?.generated_text?.trim();
+		if (!generatedText) throw new Error("No text generated");
 
-    // Prompt for the model
-    const prompt = `Suggest a book for someone who enjoys ${genre} and is feeling ${mood}.`;
+		console.log("✅ AI Recommended Title:", generatedText);
 
-    // Request to Hugging Face Inference API
-    // const aiResponse = await axios.post(
-    //   apiUrl,
-    //   { inputs: prompt },
-    //   {
-    //     headers: {
-    //       Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-    //       'Content-Type': 'application/json',
-    //     },
-    //   }
-    // );
+		const googleResponse = await axios.get(
+			`https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(
+				generatedText
+			)}&key=${process.env.GOOGLE_BOOKS_API_KEY}`
+		);
 
-    const aiResponse = await axios.post(
-      `https://api-inference.huggingface.co/models/${model}?wait_for_model=true`,
-      {
-        inputs: `Suggest a book for someone who likes ${genre} and feels ${mood}.`,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+		const bookData = googleResponse.data?.items?.[0]?.volumeInfo;
+		if (!bookData) throw new Error("No book found from Google");
 
-    if (!aiResponse.data || !aiResponse.data.length) {
-      throw new Error('Empty response from Hugging Face API.');
-    }
+		// Fallback cover check
+		let coverUrl =
+			bookData.imageLinks?.thumbnail ||
+			"https://books.google.com/googlebooks/images/no_cover_thumb.gif";
 
-    const recommendedTitle = aiResponse.data[0]?.generated_text.trim() || 'No recommendation found.';
+		if (
+			coverUrl.includes("no_cover_thumb") ||
+			coverUrl.includes("default_cover") ||
+			coverUrl.includes("books.google.com")
+		) {
+			coverUrl = `https://covers.openlibrary.org/b/title/${encodeURIComponent(
+				bookData.title
+			)}-L.jpg`;
+		}
 
-    console.log('✅ AI Recommended Title:', recommendedTitle);
+		const bookDetails = {
+			title: bookData.title || generatedText,
+			author: bookData.authors?.join(", ") || "Unknown",
+			cover: coverUrl,
+			description: bookData.description || "No description available.",
+		};
 
-    // Fetch book details from Google Books API
-    const googleResponse = await axios.get(
-      `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(recommendedTitle)}&key=${process.env.GOOGLE_BOOKS_API_KEY}`
-    );
+		console.log("📚 Final Book Recommendation:", bookDetails);
+		res.json(bookDetails);
+	} catch (error) {
+		console.warn("⚠️ Falling back to static recommendation...");
 
-    if (!googleResponse.data.items || googleResponse.data.items.length === 0) {
-      return res.status(404).json({ error: 'No book found for the recommendation.' });
-    }
+		const { genre, mood } = req.body;
+		const match = await getFallbackRecommendation(genre, mood);
 
-    const bookData = googleResponse.data.items[0].volumeInfo;
-    const bookDetails = {
-      title: bookData.title || recommendedTitle,
-      author: bookData.authors ? bookData.authors.join(', ') : 'Unknown',
-      cover: bookData.imageLinks?.thumbnail || 'https://books.google.com/googlebooks/images/no_cover_thumb.gif',
-      description: bookData.description || 'No description available.',
-    };
+		if (!match) {
+			return res.status(500).json({
+				error: "AI and fallback failed. Please try again later.",
+			});
+		}
 
-    console.log('📚 Final Book Recommendation:', bookDetails);
-    res.json(bookDetails);
+		let coverUrl;
 
-  } catch (error) {
-    console.error('🚨 AI Recommendation Error:', error.response?.data || error.message);
+		try {
+			const googleRes = await axios.get(
+				`https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(
+					match.book_title
+				)}&inauthor=${encodeURIComponent(match.author)}&key=${process.env.GOOGLE_BOOKS_API_KEY}`
+			);
 
-    if (error.response?.status === 404) {
-      res.status(500).json({ error: 'Hugging Face model or Google Books data not found.' });
-    } else if (error.response?.status === 401) {
-      res.status(500).json({ error: 'Invalid API key.' });
-    } else {
-      res.status(500).json({ error: 'AI recommendation failed.' });
-    }
-  }
+			coverUrl =
+				googleRes.data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail ||
+				"https://books.google.com/googlebooks/images/no_cover_thumb.gif";
+
+			if (
+				coverUrl.includes("no_cover_thumb") ||
+				coverUrl.includes("default_cover") ||
+				coverUrl.includes("books.google.com")
+			) {
+				coverUrl = `https://covers.openlibrary.org/b/title/${encodeURIComponent(
+					match.book_title
+				)}-L.jpg`;
+			}
+		} catch {
+			coverUrl = `https://covers.openlibrary.org/b/title/${encodeURIComponent(
+				match.book_title
+			)}-L.jpg`;
+		}
+
+		const fallbackBook = {
+			title: match.book_title,
+			author: match.author,
+			cover: coverUrl,
+			description:
+				"We ran out of free tokens for AI recommendations. Here’s a hand-picked book recommendation alternative for you!",
+		};
+
+		res.json(fallbackBook);
+	}
 };
