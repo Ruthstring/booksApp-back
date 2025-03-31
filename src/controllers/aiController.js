@@ -37,7 +37,8 @@ export const getAIRecommendations = async (req, res) => {
 
 		console.log(`🔍 Generating book recommendation for: Genre = ${genre}, Mood = ${mood}`);
 
-		const model = "gpt2";
+		// const model = "gpt2";
+		const model = "AventIQ-AI/all-MiniLM-L6-v2-book-recommendation-system";
 
 		const aiResponse = await axios.post(
 			`https://api-inference.huggingface.co/models/${model}?wait_for_model=true`,
